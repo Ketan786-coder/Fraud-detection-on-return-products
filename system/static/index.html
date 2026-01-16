@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Fraud Detection - Image Capture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .image-upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-upload-section:hover {
+            background: #f0f0ff;
+            border-color: #764ba2;
+        }
+
+        .image-upload-section.active {
+            background: #e8eaff;
+            border-color: #667eea;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .preview-card {
+            position: relative;
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 3/4;
+        }
+
+        .preview-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-card .label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .preview-card .remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .angle-info {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #2e7d32;
+        }
+
+        .angle-info.warning {
+            background: #fff3e0;
+            border-left-color: #ff9800;
+            color: #e65100;
+        }
+
+        .angle-info.error {
+            background: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 500;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .button-secondary {
+            background: #999;
+        }
+
+        .angle-guide {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .angle-guide h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .angle-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .angle-item {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .angle-item strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .angle-item p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .result {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .result.success {
+            border-color: #4caf50;
+            background: #f1f8f4;
+        }
+
+        .result.error {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+
+        .result.warning {
+            border-color: #ff9800;
+            background: #fff3e0;
+        }
+
+        .result h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .result p {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .angle-items {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📸 Return Fraud Detection System</h1>
+            <p>Capture product images for fraud analysis</p>
+        </header>
+
+        <div class="content">
+            <!-- Return Information Section -->
+            <div class="section">
+                <h2>1. Return Information</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="return_id">Return ID *</label>
+                        <input type="text" id="return_id" placeholder="e.g., RET_001">
+                    </div>
+                    <div class="form-group">
+                        <label for="product_sku">Product SKU *</label>
+                        <input type="text" id="product_sku" placeholder="e.g., PHONE_XYZ">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="product_name">Product Name</label>
+                    <input type="text" id="product_name" placeholder="e.g., iPhone 13 Pro">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer_id">Customer ID</label>
+                        <input type="text" id="customer_id" placeholder="e.g., CUST_123">
+                    </div>
+                    <div class="form-group">
+                        <label for="product_value">Product Value ($)</label>
+                        <input type="number" id="product_value" placeholder="0.00" step="0.01">
+                    </div>
+                </div>
+
+                <!-- Product Specifications -->
+                <div style="background: #f0f4ff; padding: 15px; border-radius: 5px; margin-top: 20px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">3. Product Specifications</h3>
+                    <label style="display: flex; align-items: center; margin-bottom: 0; cursor: pointer;">
+                        <input type="checkbox" id="has_accessories" checked style="width: 18px; height: 18px; margin-right: 10px; cursor: pointer;">
+                        <span style="font-weight: 500;">✓ Product has accessories</span>
+                    </label>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px; line-height: 1.5;">
+                        <strong>Note:</strong> Check if product comes with accessories (e.g., charger, cables, box). Serial number detection is automatic via OCR.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Delivery Images Section -->
+            <div class="section">
+                <h2>2. Delivery Images (6 Required)</h2>
+                <p style="color: #666; margin-bottom: 15px; font-size: 14px;">
+                    ℹ️ Capture product from 6 angles: Front, Back, Left, Right, Serial Number (close-up), Accessories
+                </p>
+
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab('delivery-upload', 'delivery-angles')">Upload</button>
+                    <button class="tab-button" onclick="switchTab('delivery-angles', 'delivery-upload')">Guidelines</button>
+                </div>
+
+                <div id="delivery-upload" class="tab-content active">
+                    <div class="image-upload-section" onclick="document.getElementById('delivery-input').click()">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">Click to select delivery images<br><small>(Multiple select supported)</small></div>
+                        <input type="file" id="delivery-input" accept="image/*" multiple>
+                    </div>
+                    <div id="delivery-preview" class="image-preview"></div>
+                    <div id="delivery-angle-info"></div>
+                </div>
+
+                <div id="delivery-angles" class="tab-content">
+                    <div class="angle-guide">
+                        <h3>📐 Required Angles (6 images)</h3>
+                        <div class="angle-items">
+                            <div class="angle-item">
+                                <strong>1. Front View</strong>
+                                <p>Product facing camera, centered, fill 60-70% of frame</p>
+                            </div>
+                            <div class="angle-item">
+                                <strong>2. Back View</strong>
+                                <p>Rotate 180°, keep same distance and lighting</p>
+                            </div>
+                            <div class="angle-item">
+                                <strong>3. Left Side</strong>
+                                <p>Rotate 90° left, show left edge clearly</p>
+                            </div>
+                            <div class="angle-item">
+                                <strong>4. Right Side</strong>
+                                <p>Rotate 90° right, match lighting to other angles</p>
+                            </div>
+                            <div class="angle-item">
+                                <strong>5. Serial Number</strong>
+                                <p>Close-up of IMEI/serial, must be readable</p>
+                            </div>
+                            <div class="angle-item">
+                                <strong>6. Accessories</strong>
+                                <p>All accessories spread out, each clearly visible</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Return Images Section -->
+            <div class="section">
+                <h2>3. Return Images (6 Required)</h2>
+                <p style="color: #666; margin-bottom: 15px; font-size: 14px;">
+                    ⚠️ Try to match delivery angles exactly. Same positioning = better accuracy
+                </p>
+
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab('return-upload', 'return-angles')">Upload</button>
+                    <button class="tab-button" onclick="switchTab('return-angles', 'return-upload')">Guidelines</button>
+                </div>
+
+                <div id="return-upload" class="tab-content active">
+                    <div class="image-upload-section" onclick="document.getElementById('return-input').click()">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">Click to select return images<br><small>(Multiple select supported)</small></div>
+                        <input type="file" id="return-input" accept="image/*" multiple>
+                    </div>
+                    <div id="return-preview" class="image-preview"></div>
+                    <div id="return-angle-info"></div>
+                </div>
+
+                <div id="return-angles" class="tab-content">
+                    <div class="angle-guide">
+                        <h3>📐 Match These Angles</h3>
+                        <p style="margin-bottom: 15px; color: #666;">
+                            Capture return images matching the delivery angles above. 
+                            Consistent angles improve fraud detection accuracy by 10-17%.
+                        </p>
+                        <div class="angle-items">
+                            <div class="angle-item">
+                                <strong>✓ Same background</strong>
+                                <p>Use white or neutral background if possible</p>
+                            </div>
+                            <div class="angle-item">
+                                <strong>✓ Same distance</strong>
+                                <p>Keep camera at same distance from product</p>
+                            </div>
+                            <div class="angle-item">
+                                <strong>✓ Similar lighting</strong>
+                                <p>Use similar lighting to delivery images</p>
+                            </div>
+                            <div class="angle-item">
+                                <strong>✓ Same orientation</strong>
+                                <p>Product should be rotated to same angle</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Section -->
+            <div class="section">
+                <h2>4. Run Analysis</h2>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                    Submit images for fraud detection analysis
+                </p>
+
+                <div class="button-group">
+                    <button onclick="analyzeReturn()">🔍 Analyze Return</button>
+                    <button class="button-secondary" onclick="resetForm()">↻ Clear All</button>
+                </div>
+
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing images... This may take a few seconds.</p>
+                </div>
+
+                <div id="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // File handling
+        document.getElementById('delivery-input').addEventListener('change', handleDeliveryImages);
+        document.getElementById('return-input').addEventListener('change', handleReturnImages);
+
+        let deliveryImages = [];
+        let returnImages = [];
+
+        function handleDeliveryImages(e) {
+            deliveryImages = Array.from(e.target.files);
+            displayPreviews('delivery-preview', deliveryImages, 'delivery');
+            analyzeAngles('delivery');
+        }
+
+        function handleReturnImages(e) {
+            returnImages = Array.from(e.target.files);
+            displayPreviews('return-preview', returnImages, 'return');
+            analyzeAngles('return');
+        }
+
+        function displayPreviews(containerId, files, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const card = document.createElement('div');
+                    card.className = 'preview-card';
+                    
+                    const angleLabel = getAngleLabel(index);
+                    card.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <div class="label">${angleLabel}</div>
+                        <button class="remove" onclick="removeImage('${type}', ${index})">✕</button>
+                    `;
+                    
+                    container.appendChild(card);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function getAngleLabel(index) {
+            const angles = ['Front', 'Back', 'Left', 'Right', 'Serial', 'Accessories'];
+            return angles[index] || `Image ${index + 1}`;
+        }
+
+        function removeImage(type, index) {
+            if (type === 'delivery') {
+                deliveryImages.splice(index, 1);
+                document.getElementById('delivery-input').value = '';
+                displayPreviews('delivery-preview', deliveryImages, 'delivery');
+            } else {
+                returnImages.splice(index, 1);
+                document.getElementById('return-input').value = '';
+                displayPreviews('return-preview', returnImages, 'return');
+            }
+        }
+
+        function analyzeAngles(type) {
+            const infoId = type === 'delivery' ? 'delivery-angle-info' : 'return-angle-info';
+            const infoDiv = document.getElementById(infoId);
+            
+            const images = type === 'delivery' ? deliveryImages : returnImages;
+            
+            if (images.length < 6) {
+                infoDiv.innerHTML = `
+                    <div class="angle-info warning">
+                        ⚠️ ${images.length}/6 images uploaded. Need 6 angles for optimal accuracy.
+                    </div>
+                `;
+            } else if (images.length === 6) {
+                infoDiv.innerHTML = `
+                    <div class="angle-info">
+                        ✓ All 6 angles provided. Proceeding with analysis...
+                    </div>
+                `;
+            } else {
+                infoDiv.innerHTML = `
+                    <div class="angle-info warning">
+                        ⚠️ ${images.length} images (using first 6)
+                    </div>
+                `;
+            }
+        }
+
+        function switchTab(showId, hideId) {
+            document.getElementById(showId).classList.add('active');
+            document.getElementById(hideId).classList.remove('active');
+            
+            event.target.classList.add('active');
+            event.target.parentElement.querySelectorAll('.tab-button').forEach(btn => {
+                if (btn !== event.target) btn.classList.remove('active');
+            });
+        }
+
+        async function analyzeReturn() {
+            // Validation
+            const return_id = document.getElementById('return_id').value.trim();
+            const product_sku = document.getElementById('product_sku').value.trim();
+
+            if (!return_id) {
+                alert('Please enter Return ID');
+                return;
+            }
+            if (!product_sku) {
+                alert('Please enter Product SKU');
+                return;
+            }
+            if (deliveryImages.length === 0) {
+                alert('Please upload delivery images');
+                return;
+            }
+            if (returnImages.length === 0) {
+                alert('Please upload return images');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('result').innerHTML = '';
+
+            try {
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('return_id', return_id);
+                formData.append('product_sku', product_sku);
+                formData.append('product_name', document.getElementById('product_name').value);
+                formData.append('customer_id', document.getElementById('customer_id').value);
+                formData.append('product_value', document.getElementById('product_value').value || 0);
+                
+                // Add product specifications
+                formData.append('has_accessories', document.getElementById('has_accessories').checked);
+
+                // Add images (limit to 6 each)
+                for (let i = 0; i < Math.min(deliveryImages.length, 6); i++) {
+                    formData.append('delivery_images', deliveryImages[i]);
+                }
+                for (let i = 0; i < Math.min(returnImages.length, 6); i++) {
+                    formData.append('return_images', returnImages[i]);
+                }
+
+                // Send to API
+                const response = await fetch('/api/analyze-return', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                // Hide loading
+                document.getElementById('loading').classList.remove('active');
+
+                // Display result
+                if (data.success) {
+                    displayAnalysisResult(data);
+                } else {
+                    displayError(data.error || 'Analysis failed');
+                }
+
+            } catch (error) {
+                document.getElementById('loading').classList.remove('active');
+                displayError(error.message);
+            }
+        }
+
+        function displayAnalysisResult(data) {
+            const resultDiv = document.getElementById('result');
+            const analysis = data.analysis;
+            const score = analysis.fraud_risk_score;
+
+            let statusClass = 'warning';
+            let statusText = '⚠️ MANUAL REVIEW NEEDED';
+
+            if (analysis.risk_level === 'LOW') {
+                statusClass = 'success';
+                statusText = '✓ LIKELY LEGITIMATE';
+            } else if (analysis.risk_level === 'HIGH') {
+                statusClass = 'error';
+                statusText = '✗ HIGH FRAUD RISK';
+            }
+
+            resultDiv.innerHTML = `
+                <div class="result ${statusClass}">
+                    <h3>${statusText}</h3>
+                    
+                    <p><strong>Fraud Risk Score:</strong> ${score.toFixed(1)}/100</p>
+                    <p><strong>Risk Level:</strong> ${analysis.risk_level}</p>
+                    <p><strong>Recommendation:</strong> ${analysis.recommendation}</p>
+                    <p><strong>Confidence:</strong> ${(analysis.confidence * 100).toFixed(0)}%</p>
+                    
+                    ${analysis.primary_fraud_type ? `<p><strong>Detected Fraud Type:</strong> ${analysis.primary_fraud_type}</p>` : ''}
+                    
+                    <h4 style="margin-top: 15px; margin-bottom: 10px;">Component Analysis:</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>Serial Number: ${analysis.component_scores.ocr_score.toFixed(1)}</li>
+                        <li>Accessories: ${analysis.component_scores.accessory_score.toFixed(1)}</li>
+                        <li>Damage: ${analysis.component_scores.damage_score.toFixed(1)}</li>
+                        <li>Product Swap: ${analysis.component_scores.swap_score.toFixed(1)}</li>
+                        <li>Wear/Usage: ${analysis.component_scores.wear_score.toFixed(1)}</li>
+                    </ul>
+
+                    <p style="margin-top: 15px; font-size: 12px; color: #666;">
+                        <strong>Analysis ID:</strong> ${data.return_id} | 
+                        <strong>Images:</strong> ${data.images_processed.delivery} delivery + ${data.images_processed.return} return
+                    </p>
+                </div>
+            `;
+        }
+
+        function displayError(message) {
+            document.getElementById('result').innerHTML = `
+                <div class="result error">
+                    <h3>✗ Analysis Failed</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function resetForm() {
+            document.getElementById('return_id').value = '';
+            document.getElementById('product_sku').value = '';
+            document.getElementById('product_name').value = '';
+            document.getElementById('customer_id').value = '';
+            document.getElementById('product_value').value = '';
+            
+            deliveryImages = [];
+            returnImages = [];
+            
+            document.getElementById('delivery-input').value = '';
+            document.getElementById('return-input').value = '';
+            
+            document.getElementById('delivery-preview').innerHTML = '';
+            document.getElementById('return-preview').innerHTML = '';
+            document.getElementById('delivery-angle-info').innerHTML = '';
+            document.getElementById('return-angle-info').innerHTML = '';
+            document.getElementById('result').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
